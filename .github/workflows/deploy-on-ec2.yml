@@ -24,6 +24,9 @@ jobs:
           echo "$PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
+          # SSH into the EC2 instance and create the destination directory
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST "mkdir -p /home/***/CocktailManager"
+
           # Copy the entire project to the EC2 instance
           scp -i private_key.pem -r -o StrictHostKeyChecking=no ./* $USER@$HOST:/home/ubuntu/CocktailManager
 
