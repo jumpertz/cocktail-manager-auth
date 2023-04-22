@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
 
       - name: Deploy to EC2
         env:
@@ -21,5 +23,15 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
-          scp -i private_key.pem -r -o StrictHostKeyChecking=no . ubuntu@34.229.175.112:/path/to/deploy
-          ssh -i private_key.pem -o StrictHostKeyChecking=no ubuntu@34.229.175.112 "cd /path/to/deploy && npm install && npm run build && npm start"
+
+          # Copy the entire project to the EC2 instance
+          scp -i private_key.pem -r -o StrictHostKeyChecking=no ./ $USER@$HOST:/path/to/CocktailManager
+
+          # SSH into the EC2 instance
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST << 'ENDSSH'
+            # Navigate to the api directory
+            cd /path/to/CocktailManager/cocktail-manager-auth/api
+
+            # Build and run the Docker containers
+            docker-compose up -d --build
+          ENDSSH
