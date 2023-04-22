@@ -27,8 +27,17 @@ jobs:
           # Copy the entire project to the EC2 instance
           scp -i private_key.pem -r -o StrictHostKeyChecking=no ./* $USER@$HOST:/home/ubuntu/CocktailManager
 
-          # SSH into the EC2 instance
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST << 'ENDSSH'
+            # SSH into the EC2 instance
+            ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST << 'ENDSSH'
+              # Add the current user to the docker group
+              sudo usermod -aG docker $USER
+              # Exit the SSH session
+              exit
+            ENDSSH
+
+            # SSH into the EC2 instance again for the group changes to take effect
+            ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST << 'ENDSSH'
+            
             # Navigate to the api directory
             cd /home/ubuntu/CocktailManager/cocktail-manager-auth/api
 
