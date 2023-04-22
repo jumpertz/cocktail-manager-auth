@@ -25,7 +25,7 @@ jobs:
           chmod 600 private_key.pem
 
           # Copy the entire project to the EC2 instance
-          scp -i private_key.pem -r -o StrictHostKeyChecking=no ./ $USER@$HOST:/path/to/CocktailManager
+          scp -i private_key.pem -r -o StrictHostKeyChecking=no ./ $USER@$HOST:/home/ubuntu/CocktailManager
 
           # SSH into the EC2 instance
           ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST << 'ENDSSH'
