@@ -19,9 +19,9 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: cocktail-manager-auth-db
+      POSTGRES_USER: ${BDD_ROOT}
+      POSTGRES_PASSWORD: ${BDD_PASSWORD}
+      POSTGRES_DB: ${BDD_NAME}
     volumes:
       - cocktail-manager-auth-db-data:/var/lib/postgresql/data:rw
 

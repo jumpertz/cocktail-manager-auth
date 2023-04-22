@@ -1,9 +1,16 @@
 import { Exclude } from 'class-transformer';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   @Exclude()
   id: string;
 
@@ -24,18 +31,22 @@ export class User {
   @Exclude()
   role: string;
 
-  /*@Column({ default: false })
-  isAdmin: boolean;*/
+  @Column({ default: false })
+  isAdmin: boolean;
 
-  @Column()
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   @Exclude()
   createdAt: Date;
 
-  @Column()
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
   @Exclude()
   updatedAt: Date;
 
-  @Column()
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
   @Exclude()
-  deletedAt: Date;
+  deletedAt: Date | null;
 }
