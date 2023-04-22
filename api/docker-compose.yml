@@ -12,6 +12,8 @@ services:
     volumes:
       - .:/home/node
     command: /bin/sh -c "npm i && npm run start:dev"
+    networks:
+      - cocktail-manager-network
 
   db:
     container_name: cocktail-manager-auth-db
@@ -19,11 +21,16 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: ${BDD_ROOT}
+      POSTGRES_USER: ${BDD_USER}
       POSTGRES_PASSWORD: ${BDD_PASSWORD}
       POSTGRES_DB: ${BDD_NAME}
     volumes:
       - cocktail-manager-auth-db-data:/var/lib/postgresql/data:rw
+    networks:
+      - cocktail-manager-network
 
 volumes:
   cocktail-manager-auth-db-data: {}
+
+networks:
+  cocktail-manager-network:
