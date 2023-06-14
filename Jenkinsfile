@@ -5,6 +5,10 @@ pipeline {
         NODE_ENV = 'test'
     }
 
+        tools {
+        nodejs 'nodejs' // Assurez-vous que le nom correspond à l'installation de Node.js que vous avez configurée
+    }
+
     stages {
         stage('Checkout') {
             steps {
