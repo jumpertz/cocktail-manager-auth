@@ -5,9 +5,8 @@ pipeline {
         stage('Install Node.js') {
             steps {
                 sh '''
-                    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-                    . ~/.nvm/nvm.sh
-                    nvm install --lts
+                    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+                    sudo apt-get install -y nodejs
                 '''
             }
         }
@@ -20,31 +19,19 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh '''
-                    . ~/.nvm/nvm.sh
-                    nvm use --lts
-                    npm ci
-                '''
+                sh 'npm ci'
             }
         }
 
         stage('Test') {
             steps {
-                sh '''
-                    . ~/.nvm/nvm.sh
-                    nvm use --lts
-                    npm test
-                '''
+                sh 'npm test'
             }
         }
 
         stage('Build') {
             steps {
-                sh '''
-                    . ~/.nvm/nvm.sh
-                    nvm use --lts
-                    npm run build
-                '''
+                sh 'npm run build'
             }
         }
     }
