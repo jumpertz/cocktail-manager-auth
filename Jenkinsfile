@@ -2,15 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Install Node.js') {
-            steps {
-                sh '''
-                    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-                    sudo apt-get install -y nodejs
-                '''
-            }
-        }
-
         stage('Checkout') {
             steps {
                 checkout scm
