@@ -35,9 +35,8 @@ pipeline {
             echo 'This will run only if failed'
         }
     }
-}
 
-node {
+    node {
   stage('SCM') {
     checkout scm
   }
@@ -48,5 +47,9 @@ node {
     }
   }
 }
+}
 
-//***JENKINS_SERVER_URL***/job/***JENKINS_JOB_NAME***/build?token=***JENKINS_BUILD_TRIGGER_TOKEN***
+
+
+//sonar.projectKey=CocktailManager-Auth
+// sqp_6b2993134b238d5d7b88f4d681273962e63979ed
