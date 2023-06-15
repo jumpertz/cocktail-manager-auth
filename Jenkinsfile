@@ -36,3 +36,17 @@ pipeline {
         }
     }
 }
+
+node {
+  stage('SCM') {
+    checkout scm
+  }
+  stage('SonarQube Analysis') {
+    def scannerHome = tool 'SonarScanner';
+    withSonarQubeEnv() {
+      sh "${scannerHome}/bin/sonar-scanner"
+    }
+  }
+}
+
+//***JENKINS_SERVER_URL***/job/***JENKINS_JOB_NAME***/build?token=***JENKINS_BUILD_TRIGGER_TOKEN***
