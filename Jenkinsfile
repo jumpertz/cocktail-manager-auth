@@ -14,11 +14,11 @@ pipeline {
             }
         }
 
-        // stage('Test') {
-        //     steps {
-        //         sh 'npm test'
-        //     }
-        // }
+        stage('Test') {
+            steps {
+                sh 'npm test'
+            }
+        }
 
         stage('Build') {
             steps {
