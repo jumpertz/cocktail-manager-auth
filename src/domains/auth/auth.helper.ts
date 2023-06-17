@@ -30,10 +30,8 @@ export class AuthHelper {
   }
 
   // Hash a password
-  public hashPwd(pwd: string): string {
-    const salt: string = bcrypt.genSaltSync(10);
-
-    return bcrypt.hashSync(pwd, salt);
+  public hashPwd(pwd: string): Promise<string> {
+    return bcrypt.hash(pwd, 10);
   }
 
   private async verifyToken(token: string): Promise<boolean> {

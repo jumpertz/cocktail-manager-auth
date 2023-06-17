@@ -2,10 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsAlpha } from 'class-validator';
 
 export class UpdateUserDto {
-  @ApiProperty({ type: String, example: 'John', description: 'firstname' })
+  @ApiProperty({ type: String, example: 'John', description: 'firstName' })
   @IsAlpha()
-  firstname?: string;
-  @ApiProperty({ type: String, example: 'Doe', description: 'lastname' })
+  firstName?: string;
+  @ApiProperty({ type: String, example: 'Doe', description: 'lastName' })
   @IsAlpha()
-  lastname?: string;
+  lastName?: string;
 }
