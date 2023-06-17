@@ -4,11 +4,11 @@ import { IsAlpha, IsEmail, Length } from 'class-validator';
 export class RegisterDto {
   @ApiProperty({ example: 'John' })
   @IsAlpha()
-  firstname: string;
+  firstName: string;
 
   @ApiProperty({ example: 'Doe' })
   @IsAlpha()
-  lastname: string;
+  lastName: string;
 
   @ApiProperty({ example: 'johndoe@example.com' })
   @IsEmail()
