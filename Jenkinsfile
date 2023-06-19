@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        SONARSERVER = 'sonarserver'
+        SONARSCANNER = 'sonarscanner'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -22,10 +27,10 @@ pipeline {
 
         stage('SonarQube analysis') {
                       environment {
-            scannerHome = tool 'SonarScanner 3.0';
+            scannerHome = tool "${SONARSCANNER}";
           }
             steps {
-              withSonarQubeEnv('My SonarQube Server') {
+              withSonarQubeEnv("${SONARSERVER}") {
                 sh '''${scannerHome}/bin/sonar-scanner \
                   -Dsonar.projectKey=CocktailManager-Auth \
                   -Dsonar.sources=. \
