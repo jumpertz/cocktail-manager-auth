@@ -11,8 +11,6 @@ import { REQUEST } from '@nestjs/core';
 describe('UsersService', () => {
   let usersService: UsersService;
   let userRepository: Repository<User>;
-  let request: Record<string, any>;
-  let authHelper: AuthHelper;
 
   beforeEach(async () => {
     const mockRepository = {
