@@ -37,8 +37,7 @@ pipeline {
                   -Dsonar.host.url=http://52.87.237.67:9000/
                   '''
                 }
-            }
-            script {
+                            script {
                 if (env.BRANCH_NAME == 'main') {
                     withSonarQubeEnv("${SONARSERVER}") {
                         def scannerHome = tool "${SONARSCANNER}";
@@ -47,6 +46,7 @@ pipeline {
                         }
                     }
                 }
+            }
             }
         }
         
