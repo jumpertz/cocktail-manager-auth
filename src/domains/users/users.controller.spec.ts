@@ -11,8 +11,6 @@ import { REQUEST } from '@nestjs/core';
 describe('UsersService', () => {
   let usersService: UsersService;
   let userRepository: Repository<User>;
-  let request: Record<string, any>;
-  let authHelper: AuthHelper;
 
   beforeEach(async () => {
     const mockRepository = {
@@ -49,6 +47,14 @@ describe('UsersService', () => {
       jest.spyOn(userRepository, 'find').mockResolvedValue(result);
 
       expect(await usersService.getAllUsers()).toBe(result);
+    });
+
+    it('should throw an HttpException when no users found', async () => {
+      jest.spyOn(userRepository, 'find').mockResolvedValue(null);
+
+      await expect(usersService.getAllUsers()).rejects.toThrow(
+        new HttpException('No users found', HttpStatus.NOT_FOUND),
+      );
     });
   });
 
