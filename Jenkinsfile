@@ -32,6 +32,7 @@ pipeline {
                   -Dsonar.host.url=http://
                   -Dsonar.login=ubuntu \
                   -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info'''
+                }
               
 
 
@@ -48,7 +49,6 @@ pipeline {
                 //     }
                 // }
             }
-        }
         
         stage('Archive Code Coverage') {
           steps {
@@ -71,5 +71,4 @@ pipeline {
             echo 'This will run only if failed'
         }
     }
-}
 }
