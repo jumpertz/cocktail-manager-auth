@@ -20,6 +20,18 @@ pipeline {
             }
         }
 
+        stage('SonarQube analysis') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME == 'main') {
+                        withSonarQubeEnv('My SonarQube Server') {
+                            sh 'npm run sonar'
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Build') {
             steps {
                 sh 'npm run build'
