@@ -21,7 +21,7 @@ pipeline {
         }
 
         stage('SonarQube analysis') {
-          environment {
+                      environment {
             scannerHome = tool 'SonarScanner 3.0';
           }
             steps {
@@ -33,11 +33,7 @@ pipeline {
                   -Dsonar.login=ubuntu \
                   -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info'''
                 }
-              
-
-
-
-
+            }
                 // script {
                 //     if (env.BRANCH_NAME == 'main') {
                 //         withSonarQubeEnv('My SonarQube Server') {
