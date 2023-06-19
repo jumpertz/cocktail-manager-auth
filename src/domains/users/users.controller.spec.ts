@@ -32,8 +32,6 @@ describe('UsersService', () => {
 
     usersService = await moduleRef.resolve<UsersService>(UsersService);
     userRepository = moduleRef.get<Repository<User>>(getRepositoryToken(User));
-    request = { user: {} };
-    authHelper = moduleRef.get<AuthHelper>(AuthHelper);
   });
 
   describe('getAllUsers', () => {
