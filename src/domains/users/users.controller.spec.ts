@@ -6,15 +6,19 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { AuthHelper } from '../auth/auth.helper';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
 
 describe('UsersService', () => {
   let usersService: UsersService;
   let userRepository: Repository<User>;
+  let request: Record<string, any>;
+  let authHelper: AuthHelper;
 
   beforeEach(async () => {
     const mockRepository = {
       find: jest.fn(),
       findOneBy: jest.fn(),
+      validPwd: jest.fn(),
     };
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -28,6 +32,8 @@ describe('UsersService', () => {
 
     usersService = await moduleRef.resolve<UsersService>(UsersService);
     userRepository = moduleRef.get<Repository<User>>(getRepositoryToken(User));
+    request = { user: {} };
+    authHelper = moduleRef.get<AuthHelper>(AuthHelper);
   });
 
   describe('getAllUsers', () => {
@@ -81,6 +87,69 @@ describe('UsersService', () => {
         expect(e).toBeInstanceOf(HttpException);
         expect(e.status).toBe(HttpStatus.NOT_FOUND);
       }
+    });
+  });
+
+  describe('updatePassword', () => {
+    it('should throw an error if user not found', async () => {
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(null);
+
+      try {
+        await usersService.getOneUser('12345');
+      } catch (e) {
+        expect(e).toBeInstanceOf(HttpException);
+        expect(e.status).toBe(HttpStatus.NOT_FOUND);
+      }
+    });
+
+    it('should successfully update password', async () => {
+      const result = { message: 'User updated succesfully' };
+      const user = {
+        id: '12345',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        password: 'oldHashedPassword',
+        isAdmin: false,
+      };
+      const userDto = {
+        id: '12345',
+      };
+      const changePasswordDto = {
+        oldPwd: 'oldPassword',
+        newPwd: 'newPassword',
+      };
+
+      // Simuler l'objet de demande
+      const request = {
+        user: userDto,
+      };
+
+      const mockRepository = {
+        findOneBy: jest.fn().mockResolvedValue(user),
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const mockHelper = {
+        validPwd: jest.fn().mockReturnValue(true),
+        hashPwd: jest.fn().mockResolvedValue('newHashedPassword'),
+      };
+
+      const moduleRef = await Test.createTestingModule({
+        providers: [
+          UsersService,
+          { provide: getRepositoryToken(User), useValue: mockRepository },
+          { provide: AuthHelper, useValue: mockHelper },
+          { provide: REQUEST, useValue: request },
+        ],
+      }).compile();
+
+      usersService = await moduleRef.resolve<UsersService>(UsersService);
+
+      expect(await usersService.updatePassword(changePasswordDto)).toEqual(
+        result,
+      );
+      expect(user.password).toEqual('newHashedPassword');
     });
   });
 });
