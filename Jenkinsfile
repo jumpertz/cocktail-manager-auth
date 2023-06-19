@@ -20,6 +20,12 @@ pipeline {
             }
         }
 
+        stage('Display lcov.info') {
+    steps {
+        sh 'ls -la'
+    }
+}
+
         stage('SonarQube analysis') {
             steps {
               sh 'ls -la coverage'
