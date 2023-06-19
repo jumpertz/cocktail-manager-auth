@@ -38,16 +38,16 @@ pipeline {
                   '''
                 }
             }
-                // script {
-                //     if (env.BRANCH_NAME == 'main') {
-                //         withSonarQubeEnv('My SonarQube Server') {
-                //             def scannerHome = tool 'SonarScanner 3.0';
-                //             withEnv(["JAVA_HOME=${ tool 'JDK8' }", "PATH+SONAR=${scannerHome}/bin"]) {
-                //                 sh "sonar-scanner -Dsonar.projectKey=CocktailManager-Auth -Dsonar.sources=. -Dsonar.host.url=http://52.87.237.67:9000 -Dsonar.login=ubuntu -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"
-                //             }
-                //         }
-                //     }
-                // }
+                script {
+                    if (env.BRANCH_NAME == 'main') {
+                        withSonarQubeEnv("${SONARSERVER}") {
+                            def scannerHome = tool "${SONARSCANNER}";
+                            withEnv(["JAVA_HOME=${ tool 'JDK8' }", "PATH+SONAR=${SONARSCANNER}/bin"]) {
+                                sh "sonar-scanner -Dsonar.projectKey=CocktailManager-Auth -Dsonar.sources=. -Dsonar.host.url=http://52.87.237.67:9000 -Dsonar.login=ubuntu -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info"
+                            }
+                        }
+                    }
+                }
             }
         
         stage('Archive Code Coverage') {
