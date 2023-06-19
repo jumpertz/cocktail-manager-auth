@@ -48,6 +48,14 @@ describe('UsersService', () => {
 
       expect(await usersService.getAllUsers()).toBe(result);
     });
+
+    it('should throw an HttpException when no users found', async () => {
+      jest.spyOn(userRepository, 'find').mockResolvedValue(null);
+
+      await expect(usersService.getAllUsers()).rejects.toThrow(
+        new HttpException('No users found', HttpStatus.NOT_FOUND),
+      );
+    });
   });
 
   describe('getOneUser', () => {
