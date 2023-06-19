@@ -22,6 +22,7 @@ pipeline {
 
         stage('SonarQube analysis') {
             steps {
+              sh 'ls -la coverage'
                 script {
                     if (env.BRANCH_NAME == 'main') {
                         withSonarQubeEnv('My SonarQube Server') {
