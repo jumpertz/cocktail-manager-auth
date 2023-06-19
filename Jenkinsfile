@@ -35,8 +35,6 @@ pipeline {
                   -Dsonar.projectKey=CocktailManager-Auth \
                   -Dsonar.sources=. \
                   -Dsonar.host.url=http://52.87.237.67:9000/
-                  -Dsonar.jacoco.reportPaths=target/jacoco.exec \
-                  -Dsonar.java.checkstyle.reportPAths=target/checkstyle-result.xml
                   '''
                 }
             }
