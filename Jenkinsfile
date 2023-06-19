@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONARSERVER = 'sonarserver'
-        SONARSCANNER = 'sonarscanner'
+        SONARSCANNER = 'CocktailManager-auth'
     }
 
     stages {
