@@ -16,7 +16,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'npm test'
+                sh 'npm run test:cov'
             }
         }
 
@@ -30,6 +30,12 @@ pipeline {
                     }
                 }
             }
+        }
+        
+        stage('Archive Code Coverage') {
+          steps {
+            archiveArtifacts artifacts: 'coverage/**', onlyIfSuccessful: true
+          }
         }
 
         stage('Build') {
