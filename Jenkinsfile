@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONARSERVER = 'http://52.87.237.67:9000'
+        SONARSERVER = 'CocktailManager-auth'
         SONARSCANNER = 'CocktailManager-auth'
     }
 
