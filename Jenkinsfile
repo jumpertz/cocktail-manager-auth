@@ -25,12 +25,6 @@ pipeline {
             }
         }
 
-        stage('see if a folder coverage exists') {
-            steps {
-                sh 'ls -la'
-            }
-        }
-
         stage('SonarQube analysis') {
                       environment {
             scannerHome = tool "${SONARSCANNER}";
