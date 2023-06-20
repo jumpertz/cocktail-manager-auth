@@ -12,7 +12,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UserDto } from '../users/dto/user.dto';
 import { Request } from 'express';
-import { NotFoundError } from 'src/exceptions';
+import { NotFoundError } from '../../exceptions';
 
 @Injectable()
 export class AuthService {
