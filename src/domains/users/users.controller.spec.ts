@@ -17,7 +17,9 @@ describe('UsersService', () => {
       find: jest.fn(),
       findOneBy: jest.fn(),
       validPwd: jest.fn(),
+      save: jest.fn(),
     };
+
     const moduleRef = await Test.createTestingModule({
       providers: [
         UsersService,
@@ -25,6 +27,7 @@ describe('UsersService', () => {
         { provide: JwtService, useValue: {} },
         AuthHelper,
         { provide: getRepositoryToken(User), useValue: mockRepository },
+        { provide: REQUEST, useValue: { user: { id: '12345' } } },
       ],
     }).compile();
 
@@ -146,6 +149,51 @@ describe('UsersService', () => {
       }
     });
 
+    it('should throw an error if user does not exist or old password is invalid', async () => {
+      const userDto = {
+        id: '12345',
+      };
+      const changePasswordDto = {
+        oldPwd: 'oldPassword',
+        newPwd: 'newPassword',
+      };
+
+      // Simuler l'objet de demande
+      const request = {
+        user: userDto,
+      };
+
+      const mockRepository = {
+        // Simuler un utilisateur qui n'existe pas
+        findOneBy: jest.fn().mockResolvedValue(null),
+        save: jest.fn(),
+      };
+
+      const mockHelper = {
+        // Simuler un mot de passe invalide
+        validPwd: jest.fn().mockReturnValue(false),
+        hashPwd: jest.fn(),
+      };
+
+      const moduleRef = await Test.createTestingModule({
+        providers: [
+          UsersService,
+          { provide: getRepositoryToken(User), useValue: mockRepository },
+          { provide: AuthHelper, useValue: mockHelper },
+          { provide: REQUEST, useValue: request },
+        ],
+      }).compile();
+
+      usersService = await moduleRef.resolve<UsersService>(UsersService);
+
+      try {
+        await usersService.updatePassword(changePasswordDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(HttpException);
+        expect(e.status).toBe(HttpStatus.NOT_FOUND);
+      }
+    });
+
     it('should successfully update password', async () => {
       const result = { message: 'User updated succesfully' };
       const user = {
@@ -194,6 +242,148 @@ describe('UsersService', () => {
         result,
       );
       expect(user.password).toEqual('newHashedPassword');
+    });
+  });
+
+  describe('updateProfile', () => {
+    it('should throw an error if firstName and lastName are not provided', async () => {
+      const body = {};
+
+      try {
+        await usersService.updateProfile(body);
+      } catch (e) {
+        expect(e).toBeInstanceOf(HttpException);
+        expect(e.status).toBe(HttpStatus.BAD_REQUEST);
+      }
+    });
+
+    it('should throw an error if user not found', async () => {
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(null);
+
+      try {
+        await usersService.getOneUser('12345');
+      } catch (e) {
+        expect(e).toBeInstanceOf(HttpException);
+        expect(e.status).toBe(HttpStatus.NOT_FOUND);
+      }
+    });
+
+    it('should update firstName if provided', async () => {
+      const body = { firstName: 'New Name' };
+      const user = {
+        id: '12345',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        password: 'hashedPassword',
+        isAdmin: false,
+      };
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(user);
+      jest.spyOn(userRepository, 'save').mockResolvedValue(undefined);
+
+      const result = await usersService.updateProfile(body);
+
+      expect(user.firstName).toEqual('New Name');
+      expect(result).toEqual({ message: 'User updated succesfully' });
+    });
+
+    it('should update lastName if provided', async () => {
+      const body = { lastName: 'New Last Name' };
+      const user = {
+        id: '12345',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        password: 'hashedPassword',
+        isAdmin: false,
+      };
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(user);
+      jest.spyOn(userRepository, 'save').mockResolvedValue(undefined);
+
+      const result = await usersService.updateProfile(body);
+
+      expect(user.lastName).toEqual('New Last Name');
+      expect(result).toEqual({ message: 'User updated succesfully' });
+    });
+
+    it('should return success message when user update is successful', async () => {
+      const body = {
+        firstName: 'New Name',
+        lastName: 'New Last Name',
+      };
+      const user = {
+        id: '12345',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        password: 'hashedPassword',
+        isAdmin: false,
+      };
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(user);
+      jest.spyOn(userRepository, 'save').mockResolvedValue(undefined);
+
+      const result = await usersService.updateProfile(body);
+
+      expect(result).toEqual({ message: 'User updated succesfully' });
+    });
+  });
+
+  describe('updateRole', () => {
+    it('should throw an error if user not found', async () => {
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(null);
+
+      try {
+        await usersService.updateRole('12345', 'ADMIN');
+      } catch (e) {
+        expect(e).toBeInstanceOf(HttpException);
+        expect(e.status).toBe(HttpStatus.NOT_FOUND);
+      }
+    });
+
+    it('should update user role to admin if provided', async () => {
+      const body = { isAdmin: 'true' };
+      const user = {
+        id: '12345',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        password: 'oldHashedPassword',
+        isAdmin: false,
+      };
+
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(user);
+      jest.spyOn(userRepository, 'save').mockResolvedValue(undefined);
+
+      const result = await usersService.updateRole(
+        user.id,
+        body.isAdmin === 'true' ? 'ADMIN' : 'USER',
+      );
+
+      expect(user.isAdmin).toEqual(true);
+      expect(result).toEqual({ message: 'User updated succesfully' });
+    });
+
+    it('should update user role to user if provided', async () => {
+      const body = { isAdmin: 'false' };
+      const user = {
+        id: '12345',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        password: 'oldHashedPassword',
+        isAdmin: false,
+      };
+
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(user);
+      jest.spyOn(userRepository, 'save').mockResolvedValue(undefined);
+
+      const result = await usersService.updateRole(
+        user.id,
+        body.isAdmin === 'true' ? 'ADMIN' : 'USER',
+      );
+
+      expect(user.isAdmin).toEqual(false);
+      expect(result).toEqual({ message: 'User updated succesfully' });
     });
   });
 });
