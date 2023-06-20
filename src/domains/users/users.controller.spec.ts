@@ -268,6 +268,25 @@ describe('UsersService', () => {
       }
     });
 
+    it('should not update firstName if it is an empty string', async () => {
+      const body = { firstName: '', lastName: 'New Last Name' };
+      const user = {
+        id: '12345',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        password: 'hashedPassword',
+        isAdmin: false,
+      };
+
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(user);
+      jest.spyOn(userRepository, 'save').mockResolvedValue(undefined);
+
+      await usersService.updateProfile(body);
+
+      expect(user.firstName).toEqual('John'); // unchanged
+    });
+
     it('should update firstName if provided', async () => {
       const body = { firstName: 'New Name' };
       const user = {
