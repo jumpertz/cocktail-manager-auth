@@ -21,7 +21,13 @@ pipeline {
 
         stage('Test and coverage') {
             steps {
-                sh 'npm run test -- --coverage'
+                sh 'npm run test:cov'
+            }
+        }
+
+        stage('see if a folder coverage exists') {
+            steps {
+                sh 'ls -la'
             }
         }
 
