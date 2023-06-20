@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONARSERVER = 'CocktailManager-auth'
+        SONARSERVER = 'jenkins-token'
         SONARSCANNER = 'CocktailManager-auth'
     }
 
