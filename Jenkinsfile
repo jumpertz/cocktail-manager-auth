@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        SONARSERVER = 'CocktailManager-auth'
-        SONARSCANNER = 'CocktailManager-auth'
+        SONARSERVER = 'jenkins-token'
+        SONARSCANNER = 'jenkins-token'
     }
 
     stages {
