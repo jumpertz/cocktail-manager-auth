@@ -106,6 +106,46 @@ describe('UsersService', () => {
       }
     });
 
+    it('should throw an error if reqUser.id is not provided', async () => {
+      const changePasswordDto = {
+        oldPwd: 'oldPassword',
+        newPwd: 'newPassword',
+      };
+
+      // Simuler l'objet de demande sans user id
+      const request = {
+        user: {},
+      };
+
+      const mockRepository = {
+        findOneBy: jest.fn(),
+        save: jest.fn(),
+      };
+
+      const mockHelper = {
+        validPwd: jest.fn(),
+        hashPwd: jest.fn(),
+      };
+
+      const moduleRef = await Test.createTestingModule({
+        providers: [
+          UsersService,
+          { provide: getRepositoryToken(User), useValue: mockRepository },
+          { provide: AuthHelper, useValue: mockHelper },
+          { provide: REQUEST, useValue: request },
+        ],
+      }).compile();
+
+      usersService = await moduleRef.resolve<UsersService>(UsersService);
+
+      try {
+        await usersService.updatePassword(changePasswordDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(HttpException);
+        expect(e.status).toBe(HttpStatus.BAD_REQUEST);
+      }
+    });
+
     it('should successfully update password', async () => {
       const result = { message: 'User updated succesfully' };
       const user = {
