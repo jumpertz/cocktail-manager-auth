@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm install --ignore-scripts
 
 COPY . .
 
@@ -18,7 +18,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --production
+RUN npm install --production --ignore-scripts
 
 COPY --from=build /app/dist /app/dist
 
