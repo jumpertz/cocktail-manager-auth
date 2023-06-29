@@ -40,7 +40,7 @@ export class AuthService {
     return this.usersRepository.save(newUser);
   }
 
-  public async login(body: LoginDto): Promise<string | HttpException> {
+  public async login(body: LoginDto): Promise<string> {
     const exists: User | null = await this.usersRepository.findOneBy({
       email: body.email,
     });

@@ -1,32 +1,22 @@
-import {
-  Body,
-  ClassSerializerInterceptor,
-  Controller,
-  HttpException,
-  Inject,
-  Post,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Controller, Inject } from '@nestjs/common';
+import { EventPattern, Payload } from '@nestjs/microservices';
 import { User } from '../users/users.entity';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Auth')
 @Controller()
 export class AuthController {
   @Inject(AuthService)
   private readonly authService: AuthService;
 
-  @Post('register')
-  @UseInterceptors(ClassSerializerInterceptor)
-  public register(@Body() body: RegisterDto): Promise<User | HttpException> {
+  @EventPattern('registerUser')
+  public register(@Payload() body: RegisterDto): Promise<User> {
     return this.authService.register(body);
   }
 
-  @Post('login')
-  public login(@Body() body: LoginDto): Promise<string | HttpException> {
+  @EventPattern('loginUser')
+  public login(@Payload() body: LoginDto): Promise<string> {
     return this.authService.login(body);
   }
 }
