@@ -7,7 +7,7 @@ async function initApp(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   InitSwagger(app);
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-
+  app.enableCors();
   await app.listen(5000);
 }
 

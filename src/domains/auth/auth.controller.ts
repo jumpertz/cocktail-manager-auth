@@ -34,8 +34,11 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(201)
-  public login(@Body() body: LoginDto): Promise<string> {
-    return this.authService.login(body);
+  public async login(
+    @Body() body: LoginDto,
+  ): Promise<{ token: string; status: number }> {
+    const token = await this.authService.login(body);
+    return { token: token, status: 201 };
   }
 
   @Get('me')
