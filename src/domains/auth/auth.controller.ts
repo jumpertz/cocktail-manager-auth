@@ -17,7 +17,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwTAuthGuard } from './auth.guard';
+import { JwtAuthGuard } from './auth.guard';
 import { Request } from 'express';
 
 @ApiTags('Auth')
@@ -40,7 +40,7 @@ export class AuthController {
 
   @EventPattern('me')
   @HttpCode(200)
-  @UseGuards(JwTAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   public getOneUserByToken(@Req() request: Request): Promise<User> {
     return this.authService.getOneUserByToken(request);
