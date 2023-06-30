@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { AuthHelper } from './auth.helper';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class AuthService {
@@ -25,7 +26,7 @@ export class AuthService {
       email: body.email,
     });
 
-    if (user) throw new BadRequestException('Email already exists');
+    if (user) throw new RpcException('Email already exists');
 
     body.password = await this.helper.hashPwd(body.password);
 
@@ -46,13 +47,13 @@ export class AuthService {
     });
 
     if (!exists) {
-      throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
+      throw new RpcException(`Could not find user ${body.email}`);
     }
 
     const isPwdValid = this.helper.validPwd(exists, body.password);
 
     if (!isPwdValid) {
-      throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
+      throw new RpcException('Invalid password');
     }
 
     return this.helper.generateToken(exists);

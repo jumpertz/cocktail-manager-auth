@@ -1,5 +1,4 @@
 import {
-  HttpException,
   HttpStatus,
   Inject,
   Injectable,
@@ -14,6 +13,7 @@ import { ChangePasswordDto } from './dto/update-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
 import { User } from './users.entity';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable({ scope: Scope.REQUEST })
 export class UsersService {
@@ -23,27 +23,27 @@ export class UsersService {
   @Inject(AuthHelper)
   private readonly helper: AuthHelper;
 
-  constructor(@Inject(REQUEST) private readonly request: Request) {}
+  constructor(@Inject(REQUEST) private readonly request: Request) { }
 
-  public async getAllUsers(): Promise<User[] | HttpException> {
+  public async getAllUsers(): Promise<User[]> {
     const users = await this.userRepository.find();
 
     if (!users) {
-      throw new HttpException('No users found', HttpStatus.NOT_FOUND);
+      throw new RpcException('No users found');
     }
 
     return users;
   }
 
-  public async getOneUser(id: string): Promise<User | HttpException> {
+  public async getOneUser(id: string): Promise<User> {
     if (!id) {
-      throw new HttpException('You must provide an id', HttpStatus.BAD_REQUEST);
+      throw new RpcException('You must provide an id');
     }
 
     const user: User | null = await this.userRepository.findOneBy({ id });
 
     if (!user) {
-      throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
+      throw new RpcException('Could not find user');
     }
 
     return user;
@@ -51,19 +51,17 @@ export class UsersService {
 
   public async updatePassword(
     body: ChangePasswordDto,
-  ): Promise<object | HttpException> {
+  ): Promise<object> {
     if (!body.oldPwd || !body.newPwd)
-      throw new HttpException(
+      throw new RpcException(
         'You must provide all the informations',
-        HttpStatus.BAD_REQUEST,
       );
 
     const reqUser: UserDto = <UserDto>this.request.user;
 
     if (!reqUser.id)
-      throw new HttpException(
+      throw new RpcException(
         'You must provide all the informations',
-        HttpStatus.BAD_REQUEST,
       );
 
     const user: User | null = await this.userRepository.findOneBy({
@@ -71,7 +69,7 @@ export class UsersService {
     });
 
     if (!user || !this.helper.validPwd(user, body.oldPwd)) {
-      throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
+      throw new RpcException('Could not find user');
     }
 
     user.password = this.helper.hashPwd(body.newPwd);
@@ -83,11 +81,10 @@ export class UsersService {
 
   public async updateProfile(
     body: UpdateUserDto,
-  ): Promise<object | HttpException> {
+  ): Promise<object> {
     if (!body.firstname && !body.lastname)
-      throw new HttpException(
+      throw new RpcException(
         'You must provide all the informations',
-        HttpStatus.BAD_REQUEST,
       );
 
     const reqUser: UserDto = <UserDto>this.request.user;
@@ -97,7 +94,7 @@ export class UsersService {
     });
 
     if (!user)
-      throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
+      throw new RpcException('Could not find user');
 
     if (body.firstname && body.firstname?.length > 0) {
       user.firstname = body.firstname;
@@ -115,11 +112,11 @@ export class UsersService {
   public async updateRole(
     id: string,
     role: string,
-  ): Promise<object | HttpException> {
+  ): Promise<object> {
     const user: User | null = await this.userRepository.findOneBy({ id });
 
     if (!user)
-      throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
+      throw new RpcException('Could not find user');
 
     user.role = role;
 
@@ -132,17 +129,16 @@ export class UsersService {
     return { message: 'User updated succesfully' };
   }
 
-  public async deleteUser(id: string): Promise<object | HttpException> {
+  public async deleteUser(id: string): Promise<object> {
     if (!id)
-      throw new HttpException(
+      throw new RpcException(
         'You must provide all the informations',
-        HttpStatus.BAD_REQUEST,
       );
 
     const user: User | null = await this.userRepository.findOneBy({ id });
 
     if (!user)
-      throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
+      throw new RpcException('Could not find user');
 
     this.userRepository.delete(user);
 

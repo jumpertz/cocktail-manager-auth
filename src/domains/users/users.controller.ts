@@ -1,16 +1,10 @@
 import {
-  Body,
-  ClassSerializerInterceptor,
   Controller,
-  Delete,
-  Get,
-  HttpException,
   Inject,
-  Param,
-  Patch,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { RoleAdminGuard } from '../auth/admin.guard';
 import { JwtAuthGuard } from '../auth/auth.guard';
 import { ChangePasswordDto } from './dto/update-password.dto';
@@ -18,56 +12,48 @@ import { UpdateUserRoleDto } from './dto/update-role.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './users.entity';
 import { UsersService } from './users.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ClassSerializerInterceptor } from '@nestjs/common';
 
-@ApiTags('Users')
-@Controller('users')
+@Controller()
 export class UsersController {
   @Inject(UsersService)
   private readonly userService: UsersService;
 
-  @Get()
-  @UseInterceptors(ClassSerializerInterceptor)
+  @MessagePattern('getAllUsers')
   @UseGuards(JwtAuthGuard, RoleAdminGuard)
-  public getAllUsers(): Promise<User[] | HttpException> {
+  @UseInterceptors(ClassSerializerInterceptor)
+  public getAllUsers(): Promise<User[]> {
     return this.userService.getAllUsers();
   }
 
-  @Get('/:id')
+  @MessagePattern('getOneUser')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
-  public getOneUser(@Param('id') id: string): Promise<User | HttpException> {
+  public getOneUser(@Payload('id') id: string): Promise<User> {
     return this.userService.getOneUser(id);
   }
 
-  @Patch('/password')
+  @MessagePattern('updatePassword')
   @UseGuards(JwtAuthGuard)
-  public updatePassword(
-    @Body() body: ChangePasswordDto,
-  ): Promise<object | HttpException> {
+  public updatePassword(@Payload() body: ChangePasswordDto): Promise<object> {
     return this.userService.updatePassword(body);
   }
 
-  @Patch('/:id/role')
+  @MessagePattern('updateRole')
   @UseGuards(JwtAuthGuard, RoleAdminGuard)
-  public updateRole(
-    @Param('id') id: string,
-    @Body() body: UpdateUserRoleDto,
-  ): Promise<object | HttpException> {
-    return this.userService.updateRole(id, body.role);
+  public updateRole(@Payload('id') id: string, @Payload('role') role: string): Promise<object> {
+    return this.userService.updateRole(id, role);
   }
 
-  @Patch('/:id')
+  @MessagePattern('updateProfile')
   @UseGuards(JwtAuthGuard)
-  public updateProfile(
-    @Body() body: UpdateUserDto,
-  ): Promise<object | HttpException> {
+  public updateProfile(@Payload() body: UpdateUserDto): Promise<object> {
     return this.userService.updateProfile(body);
   }
 
-  @Delete('/:id')
+  @MessagePattern('deleteUser')
   @UseGuards(JwtAuthGuard, RoleAdminGuard)
-  public deleteUser(@Param('id') id: string): Promise<object | HttpException> {
+  public deleteUser(@Payload('id') id: string): Promise<object> {
     return this.userService.deleteUser(id);
   }
 }
