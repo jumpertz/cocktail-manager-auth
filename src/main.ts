@@ -1,14 +1,22 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import InitSwagger from './config/swagger.config';
 import { AppModule } from './app.module';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 async function initApp(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
-  InitSwagger(app);
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    AppModule,
+    {
+      transport: Transport.TCP,
+      options: {
+        host: 'auth',
+        port: 5000,
+      }
+    },
+  );
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-  app.enableCors();
-  await app.listen(5000);
+
+  await app.listen();
 }
 
 initApp();

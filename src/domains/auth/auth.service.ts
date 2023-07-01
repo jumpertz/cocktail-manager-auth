@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
@@ -13,6 +12,7 @@ import { RegisterDto } from './dto/register.dto';
 import { UserDto } from '../users/dto/user.dto';
 import { Request } from 'express';
 import { NotFoundError } from '../../exceptions';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +27,7 @@ export class AuthService {
       email: body.email,
     });
 
-    if (user) throw new BadRequestException('Email already exists');
+    if (user) throw new RpcException('Email already exists');
 
     const newUser: User = this.usersRepository.create(body);
 
@@ -42,13 +42,13 @@ export class AuthService {
     });
 
     if (!exists) {
-      throw NotFoundError('user', body.email);
+      throw new RpcException(`Could not find user ${body.email}`);
     }
 
     const isPwdValid = this.helper.validPwd(exists, body.password);
 
     if (!isPwdValid) {
-      throw NotFoundError('user', body.email);
+      throw new RpcException('Invalid password');
     }
 
     return this.helper.generateToken(exists);
