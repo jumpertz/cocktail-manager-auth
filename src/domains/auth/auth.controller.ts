@@ -10,12 +10,14 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { EventPattern, Payload } from '@nestjs/microservices';
 import { User } from '../users/users.entity';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwTAuthGuard } from './auth.guard';
+import { JwtAuthGuard } from './auth.guard';
 import { Request } from 'express';
 
 @ApiTags('Auth')
@@ -25,22 +27,20 @@ export class AuthController {
   @Inject(AuthService)
   private readonly authService: AuthService;
 
-  @Post('register')
-  @HttpCode(201)
+  @EventPattern('registerUser')
   @UseInterceptors(ClassSerializerInterceptor)
-  public register(@Body() body: RegisterDto): Promise<User> {
+  public register(@Payload() body: RegisterDto): Promise<User> {
     return this.authService.register(body);
   }
 
-  @Post('login')
-  @HttpCode(201)
-  public login(@Body() body: LoginDto): Promise<string> {
+  @EventPattern('loginUser')
+  public login(@Payload() body: LoginDto): Promise<string> {
     return this.authService.login(body);
   }
 
-  @Get('me')
+  @EventPattern('me')
   @HttpCode(200)
-  @UseGuards(JwTAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   public getOneUserByToken(@Req() request: Request): Promise<User> {
     return this.authService.getOneUserByToken(request);
