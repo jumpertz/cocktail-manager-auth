@@ -1,0 +1,4 @@
+apiVersion: v2
+name: cocktail-manager-auth
+description: A Helm chart for the auth microservice
+version: 1.0.0
