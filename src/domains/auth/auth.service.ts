@@ -42,7 +42,9 @@ export class AuthService {
     });
 
     if (!exists) {
-      throw new RpcException(`Could not find user ${body.email}`);
+      throw new RpcException(
+        new NotFoundException(`Could not find user ${body.email}`),
+      );
     }
 
     const isPwdValid = this.helper.validPwd(exists, body.password);
