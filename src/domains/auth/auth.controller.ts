@@ -34,8 +34,12 @@ export class AuthController {
   }
 
   @EventPattern('login')
-  public login(@Payload() body: LoginDto): Promise<string> {
-    return this.authService.login(body);
+  public async login(@Payload() body: LoginDto): Promise<Record<string, string>> {
+    const token = await this.authService.login(body);
+    return {
+      token,
+      status: token ? '200' : '401',
+    };
   }
 
   @EventPattern('me')
