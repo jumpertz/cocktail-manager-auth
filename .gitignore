@@ -38,4 +38,4 @@ lerna-debug.log*
 .env
 .ash_history
 
-/.npm
+.npm/
