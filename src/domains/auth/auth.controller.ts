@@ -17,7 +17,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from './auth.guard';
+import { JwtAuthGuard, TokenRequest } from './auth.guard';
 import { Request } from 'express';
 
 @ApiTags('Auth')
@@ -34,7 +34,9 @@ export class AuthController {
   }
 
   @EventPattern('login')
-  public async login(@Payload() body: LoginDto): Promise<Record<string, string>> {
+  public async login(
+    @Payload() body: LoginDto,
+  ): Promise<Record<string, string>> {
     const token = await this.authService.login(body);
     return {
       token,
@@ -45,7 +47,7 @@ export class AuthController {
   @EventPattern('me')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
-  public getOneUserByToken(@Payload() request: Request): Promise<User> {
-    return this.authService.getOneUserByToken(request);
+  public getOneUserByToken(@Payload() request: TokenRequest): Promise<User> {
+    return this.authService.getOneUserByToken(request.token);
   }
 }

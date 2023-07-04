@@ -13,6 +13,7 @@ import { UserDto } from '../users/dto/user.dto';
 import { Request } from 'express';
 import { NotFoundError } from '../../exceptions';
 import { RpcException } from '@nestjs/microservices';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +22,9 @@ export class AuthService {
 
   @Inject(AuthHelper)
   private readonly helper: AuthHelper;
+
+  constructor(private readonly jwt: JwtService) { }
+
 
   public async register(body: RegisterDto): Promise<User> {
     const user: User | null = await this.usersRepository.findOneBy({
@@ -56,12 +60,11 @@ export class AuthService {
     return this.helper.generateToken(exists);
   }
 
-  public async getOneUserByToken(request: Request): Promise<User> {
-    const reqUser: UserDto = <UserDto>request.user;
+  public async getOneUserByToken(token: string): Promise<User> {
+    const decoded = this.jwt.decode(token);
+    console.log(decoded);
 
-    const user: User | null = await this.usersRepository.findOneBy({
-      id: reqUser.id,
-    });
+    const user: User | null = await this.usersRepository.findOneBy({});
 
     if (!user) {
       throw new NotFoundException('Could not find user');
