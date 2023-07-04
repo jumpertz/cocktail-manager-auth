@@ -1,4 +1,4 @@
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { Repository } from 'typeorm';
 import { User } from '../users/users.entity';
@@ -12,102 +12,126 @@ describe('AuthService', () => {
   let authService;
   let userRepository;
   let authHelper;
+  let jwtService;
 
   beforeEach(async () => {
-    const mockRepository = {
-      findOneBy: jest.fn(),
-      validPwd: jest.fn(),
-      save: jest.fn(),
-      remove: jest.fn(),
-    };
-    const moduleRef = await Test.createTestingModule({
+    const module: TestingModule = await Test.createTestingModule({
       providers: [
-        UsersService,
-        { provide: getRepositoryToken(User), useValue: {} },
         AuthService,
-        AuthHelper,
-        { provide: getRepositoryToken(User), useValue: mockRepository },
-        { provide: 'UserRepository', useClass: Repository },
+        {
+          provide: AuthHelper,
+          useFactory: () => ({
+            validPwd: jest.fn().mockReturnValue(true),
+            generateToken: jest.fn().mockReturnValue('token'),
+            decodeToken: jest.fn(),
+            hashPwd: jest.fn(),
+          }),
+        },
+        {
+          provide: getRepositoryToken(User),
+          useFactory: () => ({
+            findOneBy: jest.fn(),
+            create: jest.fn(),
+            insert: jest.fn(),
+          }),
+        },
         {
           provide: JwtService,
-          useValue: {
-            // Ici vous pouvez mocker les méthodes dont vous avez besoin
-            sign: jest.fn(() => 'token'),
-          },
+          useFactory: () => ({
+            decode: jest.fn().mockReturnValue({ id: 'id', email: 'email' }),
+          }),
         },
       ],
     }).compile();
 
-    authService = moduleRef.get<AuthService>(AuthService);
-    userRepository = moduleRef.get<Repository<User>>('UserRepository');
-    authHelper = moduleRef.get<AuthHelper>(AuthHelper);
+    authService = module.get<AuthService>(AuthService);
+    userRepository = module.get(getRepositoryToken(User));
+    jwtService = module.get<JwtService>(JwtService);
+    authHelper = module.get<AuthHelper>(AuthHelper);
+  });
+
+  it('doit être défini', () => {
+    expect(authService).toBeDefined();
   });
 
   describe('register', () => {
-    it('should throw an error if user already exists', async () => {
-      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(new User());
+    it("doit retourner une exception si l'email existe déjà", async () => {
+      const userData = { email: 'test@test.com', password: 'password' };
+      userRepository.findOneBy = jest.fn().mockResolvedValueOnce(userData);
 
-      await expect(
-        authService.register({ email: 'test@test.com' }),
-      ).rejects.toThrow(BadRequestException);
+      await expect(authService.register(userData)).rejects.toThrow(
+        'Email already exists',
+      );
     });
 
-    it('should register a new user if user does not exist', async () => {
-      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(null);
-      jest.spyOn(userRepository, 'create').mockReturnValue(new User());
-      jest.spyOn(userRepository, 'insert').mockResolvedValue(undefined);
+    it("doit créer un nouvel utilisateur si l'email n'existe pas", async () => {
+      const userData = { email: 'test@test.com', password: 'password' };
+      userRepository.findOneBy = jest.fn().mockResolvedValueOnce(null);
+      userRepository.create = jest.fn().mockReturnValueOnce(userData);
+      userRepository.insert = jest.fn();
 
-      await expect(
-        authService.register({ email: 'test@test.com' }),
-      ).resolves.toBeInstanceOf(User);
+      const result = await authService.register(userData);
+
+      expect(result).toEqual(userData);
     });
   });
 
   describe('login', () => {
-    it('should throw an error if user does not exist', async () => {
-      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(null);
+    it("should throw an error if user doesn'nt exists", async () => {
+      const userData = { email: 'test@test.com', password: 'password' };
+      userRepository.findOneBy = jest.fn().mockResolvedValueOnce(null);
 
-      await expect(
-        authService.login({ email: 'test@test.com', password: 'test' }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(authService.login(userData)).rejects.toThrow(
+        `Could not find user ${userData.email}`,
+      );
     });
 
-    it('should throw an error if password is invalid', async () => {
-      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(new User());
-      jest.spyOn(authHelper, 'validPwd').mockReturnValue(false);
+    it('doit retourner une exception si le mot de passe est invalide', async () => {
+      const userData = { email: 'test@test.com', password: 'password' };
+      userRepository.findOneBy = jest.fn().mockResolvedValueOnce(userData);
+      authHelper.validPwd = jest.fn().mockReturnValueOnce(false);
 
-      await expect(
-        authService.login({ email: 'test@test.com', password: 'test' }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(authService.login(userData)).rejects.toThrow(
+        'Invalid password',
+      );
     });
 
-    it('should return a token if user exists and password is valid', async () => {
-      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(new User());
-      jest.spyOn(authHelper, 'validPwd').mockReturnValue(true);
-      jest.spyOn(authHelper, 'generateToken').mockReturnValue('token');
+    it("doit retourner un jeton si l'email et le mot de passe sont valides", async () => {
+      const userData = { email: 'test@test.com', password: 'password' };
+      const token = 'token';
+      userRepository.findOneBy = jest.fn().mockResolvedValueOnce(userData);
+      authHelper.validPwd = jest.fn().mockReturnValueOnce(true);
+      authHelper.generateToken = jest.fn().mockReturnValueOnce(token);
 
-      await expect(
-        authService.login({ email: 'test@test.com', password: 'test' }),
-      ).resolves.toBe('token');
+      const result = await authService.login(userData);
+
+      expect(result).toEqual(token);
     });
   });
 
   describe('getOneUserByToken', () => {
-    it('should throw an error if user does not exist', async () => {
-      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(null);
+    describe('getOneUserByToken', () => {
+      it("doit retourner une exception si l'utilisateur n'existe pas", async () => {
+        const token = 'token';
+        const decodedToken = { id: '1', email: 'test@test.com' };
+        jwtService.decode = jest.fn().mockReturnValueOnce(decodedToken);
+        userRepository.findOneBy = jest.fn().mockResolvedValueOnce(null);
+        await expect(authService.getOneUserByToken(token)).rejects.toThrow(
+          'Could not find user',
+        );
+      });
 
-      await expect(
-        authService.getOneUserByToken({ user: { id: '1' } }),
-      ).rejects.toThrow(NotFoundException);
-    });
+      it('doit retourner un utilisateur si le jeton est valide', async () => {
+        const token = 'token';
+        const decodedToken = { id: '1', email: 'test@test.com' };
+        const user = { id: '1', email: 'test@test.com', password: 'password' };
+        jwtService.decode = jest.fn().mockReturnValueOnce(decodedToken);
+        userRepository.findOneBy = jest.fn().mockResolvedValueOnce(user);
 
-    it('should return a user if user exists', async () => {
-      const user = new User();
-      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(user);
+        const result = await authService.getOneUserByToken(token);
 
-      await expect(
-        authService.getOneUserByToken({ user: { id: '1' } }),
-      ).resolves.toBe(user);
+        expect(result).toEqual(user);
+      });
     });
   });
 });
