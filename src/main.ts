@@ -11,7 +11,7 @@ async function initApp(): Promise<void> {
       options: {
         host: 'auth',
         port: 5000,
-      }
+      },
     },
   );
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
