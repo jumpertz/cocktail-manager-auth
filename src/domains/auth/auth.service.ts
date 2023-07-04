@@ -62,9 +62,15 @@ export class AuthService {
   }
 
   public async getOneUserByToken(token: string): Promise<User> {
-    const { id, email } = this.jwt.decode(token.replace('Bearer ', '')) as { id: string, email: string };
+    const { id, email } = this.jwt.decode(token.replace('Bearer ', '')) as {
+      id: string;
+      email: string;
+    };
 
-    const user: User | null = await this.usersRepository.findOneBy({ id, email });
+    const user: User | null = await this.usersRepository.findOneBy({
+      id,
+      email,
+    });
 
     if (!user) {
       throw new NotFoundException('Could not find user');
