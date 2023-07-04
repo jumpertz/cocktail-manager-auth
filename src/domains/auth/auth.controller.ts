@@ -17,7 +17,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from './auth.guard';
+import { JwtAuthGuard, TokenRequest } from './auth.guard';
 import { Request } from 'express';
 
 @ApiTags('Auth')
@@ -27,22 +27,27 @@ export class AuthController {
   @Inject(AuthService)
   private readonly authService: AuthService;
 
-  @EventPattern('registerUser')
+  @EventPattern('register')
   @UseInterceptors(ClassSerializerInterceptor)
   public register(@Payload() body: RegisterDto): Promise<User> {
     return this.authService.register(body);
   }
 
-  @EventPattern('loginUser')
-  public login(@Payload() body: LoginDto): Promise<string> {
-    return this.authService.login(body);
+  @EventPattern('login')
+  public async login(
+    @Payload() body: LoginDto,
+  ): Promise<Record<string, string>> {
+    const token = await this.authService.login(body);
+    return {
+      token,
+      status: token ? '200' : '401',
+    };
   }
 
   @EventPattern('me')
-  @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
-  public getOneUserByToken(@Req() request: Request): Promise<User> {
-    return this.authService.getOneUserByToken(request);
+  public getOneUserByToken(@Payload() request: TokenRequest): Promise<User> {
+    return this.authService.getOneUserByToken(request.token);
   }
 }

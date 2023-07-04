@@ -19,7 +19,6 @@ import { ClassSerializerInterceptor } from '@nestjs/common';
 
 @ApiTags('Users')
 @ApiBearerAuth()
-
 @Controller()
 export class UsersController {
   @Inject(UsersService)
