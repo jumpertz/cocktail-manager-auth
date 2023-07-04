@@ -21,7 +21,6 @@ import { JwtAuthGuard, TokenRequest } from './auth.guard';
 import { Request } from 'express';
 
 @ApiTags('Auth')
-@ApiBearerAuth()
 @Controller()
 export class AuthController {
   @Inject(AuthService)
@@ -47,7 +46,7 @@ export class AuthController {
   @EventPattern('me')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
-  public getOneUserByToken(@Payload() request: TokenRequest): Promise<User> {
-    return this.authService.getOneUserByToken(request.token);
+  public getOneUserByToken(@Payload() request: TokenRequest): User | null {
+    return request.user;
   }
 }
