@@ -8,6 +8,8 @@ import { AuthHelper } from '../auth/auth.helper';
 describe('UsersService', () => {
   let usersService;
   let userRepository;
+  let authHelper;
+  let request;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -19,12 +21,16 @@ describe('UsersService', () => {
             find: jest.fn(),
             findOne: jest.fn(),
             findOneBy: jest.fn(),
+            save: jest.fn(),
           }),
         },
         {
           provide: AuthHelper,
           useFactory: () => ({
-            // Vous pouvez ajouter ici les méthodes que vous souhaitez simuler
+            validPwd: jest.fn().mockReturnValue(true),
+            generateToken: jest.fn().mockReturnValue('token'),
+            decodeToken: jest.fn(),
+            hashPwd: jest.fn(),
           }),
         },
       ],
@@ -32,6 +38,10 @@ describe('UsersService', () => {
 
     usersService = await module.resolve<UsersService>(UsersService);
     userRepository = module.get(getRepositoryToken(User));
+    authHelper = module.get<AuthHelper>(AuthHelper);
+    request = { user: { id: '123' } };
+
+    jest.spyOn(usersService, 'getRequest').mockReturnValue(request);
   });
 
   describe('getAllUsers', () => {
@@ -77,6 +87,55 @@ describe('UsersService', () => {
       await expect(usersService.getOneUser(id)).rejects.toThrow(
         'Could not find user',
       );
+    });
+  });
+  describe('updatePassword', () => {
+    let request;
+    beforeEach(async () => {
+      request = { user: { id: '123' } };
+      usersService = await module.resolve<UsersService>(UsersService);
+    });
+
+    it('doit lancer une exception si les informations ne sont pas fournies', async () => {
+      const dto = { oldPwd: '', newPwd: '' };
+
+      await expect(usersService.updatePassword(dto)).rejects.toThrow(
+        'You must provide all the informations',
+      );
+    });
+
+    it("doit lancer une exception si l'id utilisateur n'est pas trouvé", async () => {
+      const dto = { oldPwd: 'oldPwd', newPwd: 'newPwd' };
+      userRepository.findOne.mockResolvedValue(null);
+
+      await expect(usersService.updatePassword(dto)).rejects.toThrow(
+        'Could not find user',
+      );
+    });
+
+    it("doit lancer une exception si l'ancien mot de passe est invalide", async () => {
+      const dto = { oldPwd: 'oldPwd', newPwd: 'newPwd' };
+      const user = { id: '123', password: 'hashedPwd' };
+      userRepository.findOne.mockResolvedValue(user);
+      authHelper.validPwd.mockReturnValue(false);
+
+      await expect(usersService.updatePassword(dto)).rejects.toThrow(
+        'Could not find user',
+      );
+    });
+
+    it("doit mettre à jour le mot de passe de l'utilisateur", async () => {
+      const dto = { oldPwd: 'oldPwd', newPwd: 'newPwd' };
+      const user = { id: '123', password: 'hashedPwd' };
+      userRepository.findOne.mockResolvedValue(user);
+      authHelper.validPwd.mockReturnValue(true);
+      authHelper.hashPwd.mockResolvedValue('newHashedPwd');
+
+      const result = await usersService.updatePassword(dto);
+
+      expect(result).toEqual({ message: 'User updated succesfully' });
+      expect(user.password).toBe('newHashedPwd');
+      expect(userRepository.save).toHaveBeenCalledWith(user);
     });
   });
 });

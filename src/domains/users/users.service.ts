@@ -49,20 +49,14 @@ export class UsersService {
     return user;
   }
 
-  public async updatePassword(
-    body: ChangePasswordDto,
-  ): Promise<object> {
+  public async updatePassword(body: ChangePasswordDto): Promise<object> {
     if (!body.oldPwd || !body.newPwd)
-      throw new RpcException(
-        'You must provide all the informations',
-      );
+      throw new RpcException('You must provide all the informations');
 
     const reqUser: UserDto = <UserDto>this.request.user;
 
     if (!reqUser.id)
-      throw new RpcException(
-        'You must provide all the informations',
-      );
+      throw new RpcException('You must provide all the informations');
 
     const user: User | null = await this.userRepository.findOneBy({
       id: reqUser.id,

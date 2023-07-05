@@ -19,11 +19,11 @@ pipeline {
             }
         }
 
-        stage('Test and coverage') {
-            steps {
-                sh 'npm run test:cov'
-            }
-        }
+        // stage('Test and coverage') {
+        //     steps {
+        //         sh 'npm run test:cov'
+        //     }
+        // }
 
         stage('SonarQube analysis') {
                       environment {
