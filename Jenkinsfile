@@ -61,6 +61,14 @@ pipeline {
                 sh 'npm run build'
             }
         }
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh(script: '''
+                    helm upgrade --install --namespace default --wait cocktail-manager-auth ./chart
+                ''')
+            }
+        }
+    }
     }
 
     post {
