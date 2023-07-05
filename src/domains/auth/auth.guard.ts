@@ -1,8 +1,9 @@
-import { ExecutionContext, Injectable, Inject } from '@nestjs/common';
+import { ExecutionContext, Injectable, Inject, Logger } from '@nestjs/common';
 import { AuthGuard, IAuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { User } from '../users/users.entity';
+import { RpcException } from '@nestjs/microservices';
 
 export type TokenRequest = {
   token: string
@@ -17,12 +18,21 @@ export class JwtAuthGuard extends AuthGuard('jwt') implements IAuthGuard {
   public async canActivate(
     context: ExecutionContext
   ): Promise<boolean> {
-    const req: TokenRequest = context.switchToRpc().getData();
+    try {
+      const req: TokenRequest = context.switchToRpc().getData();
 
-    if (!req.token) {
-      return false;
+      if (!req.token) {
+        return false;
+      }
+
+      req.user = await this.authService.getOneUserByToken(req.token);
+      return true;
+
+    } catch (err) {
+      throw new RpcException({
+        status: '401',
+        message: 'Oh shit ...',
+      })
     }
-    req.user = await this.authService.getOneUserByToken(req.token);
-    return true;
   }
 }
