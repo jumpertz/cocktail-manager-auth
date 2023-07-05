@@ -63,11 +63,15 @@ pipeline {
         }
         stage('Deploy to Kubernetes') {
             steps {
-                sh(script: '''
-                    helm upgrade --install --namespace default --wait cocktail-manager-auth ./chart
-                ''')
+                withCredentials([string(credentialsId: 'Jenkins - kubernetes', variable: 'TOKEN')]) {
+                    sh(script: '''
+                        kubectl config set-credentials default --token=$TOKEN
+                        helm upgrade --install --namespace default --wait cocktail-manager-auth ./chart
+                    ''')
+                }
             }
         }
+
     }
 
     post {
