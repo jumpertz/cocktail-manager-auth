@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --ignore-scripts --legacy-peer-deps
+RUN npm install
 
 COPY . .
 
@@ -18,7 +18,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --production --ignore-scripts
+RUN npm install --production
 
 COPY --from=build /app/dist /app/dist
 

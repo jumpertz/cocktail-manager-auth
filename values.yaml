@@ -1,4 +1,4 @@
-replicaCount: 3
+replicaCount: 1
 
 image:
   repository: us-central1-docker.pkg.dev/cocktailmanager/cocktail-manager-auth/cocktail-manager-auth
@@ -6,8 +6,8 @@ image:
   pullPolicy: IfNotPresent
 
 service:
-  type: LoadBalancer
-  port: '80'
+  type: NodePort
+  port: '3000'
   targetPort: '5000'
 
 resources:
@@ -21,4 +21,4 @@ resources:
 env:
   port: '5000'
   secretName: cocktail-manager-auth-secret
-  DATABASE_URL: 'postgresql://postgres:k@T!gVWFdeaoF9Gbag62@cocktail-manager-db-postgresql.default.svc.cluster.local:5432/cocktail-manager-db'
+  DATABASE_URL: 'postgresql://postgres:k@T!gVWFdeaoF9Gbag62@cocktail-manager-db.default.svc.cluster.local:5432/cocktail-manager-db'

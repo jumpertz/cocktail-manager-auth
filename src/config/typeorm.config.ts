@@ -5,15 +5,15 @@ const IS_LOCAL: boolean = process.env.STAGE === 'local';
 
 export const TypeOrmConfig: TypeOrmModuleOptions = {
   type: 'postgres',
-  url: process.env.DATABASE_URL,
+  url: 'postgres://root:password@localhost:5432/cocktail-manager-db',
   entities: [User],
-  synchronize: IS_LOCAL,
-  ssl: !IS_LOCAL,
-  extra: IS_LOCAL
-    ? {}
-    : {
-        ssl: {
-          rejectUnauthorized: false,
-        },
-      },
+  synchronize: true,
+  // ssl: !IS_LOCAL,
+  // extra: IS_LOCAL
+  //   ? {}
+  //   : {
+  //     ssl: {
+  //       rejectUnauthorized: false,
+  //     },
+  //   },
 };

@@ -9,8 +9,8 @@ async function initApp(): Promise<void> {
     {
       transport: Transport.TCP,
       options: {
-        host: 'auth',
-        port: 5000,
+        host: process.env.HOST,
+        port: parseInt(process.env.PORT),
       },
     },
   );
